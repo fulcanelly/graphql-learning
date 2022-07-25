@@ -1,0 +1,2 @@
+
+SET TIMEZONE='Europe/Kiev';

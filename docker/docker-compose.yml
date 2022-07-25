@@ -1,0 +1,48 @@
+version: "3.3"
+
+services:
+ 
+  app:
+     networks: ['mynetwork']
+     build: ../app
+
+     depends_on: 
+       - postgres
+     stdin_open: true
+     tty: true
+     restart: always
+     ports:
+      - 6464:6464    
+  postgres:
+    image: "postgres"
+    networks: ['mynetwork']
+
+    environment:
+      POSTGRES_PASSWORD: Pass2020!
+
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    ports:
+      - 5432:5432 
+
+    restart: always
+
+    stdin_open: true
+    tty: true
+
+  postgres-setup:
+    networks: ['mynetwork']
+    environment:
+      POSTGRES_PASSWORD: Pass2020!
+
+    build: ../postgres
+    depends_on: 
+      - postgres
+    restart: "no"
+  
+
+
+networks: {
+  mynetwork: {}
+}
+
