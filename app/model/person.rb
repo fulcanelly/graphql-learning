@@ -14,6 +14,8 @@ ActiveRecord::Base.establish_connection(
 class User < ActiveRecord::Base
     self.table_name = 'users' 
     has_one :summary
+    has_many :posts
+
 end
 
 class Post < ActiveRecord::Base
@@ -23,11 +25,15 @@ end
 class Summary < ActiveRecord::Base
     self.table_name = 'summaries' 
 
-    belongs_to :users, foreign_key: true
+ #   belongs_to :users, foreign_key: { to_table: :user }
 
 end
 
 class Post < ActiveRecord::Base
+    self.table_name = 'posts' 
+
+ #   belongs_to :users, foreign_key: { to_table: :user }
+
 end
 
 class Rate < ActiveRecord::Base
@@ -51,7 +57,9 @@ class CreateAll < ActiveRecord::Migration[7.0]
             t.string :bio
             t.integer :birth
 
-            t.belongs_to :user
+           # t.belongs_to :user
+            t.references :user, null: true, foreign_key: { to_table: :users }
+
             t.timestamps 
 
 
@@ -64,6 +72,8 @@ class CreateAll < ActiveRecord::Migration[7.0]
         
             t.timestamps 
 
+        #    t.belongs_to :user
+            t.references :user, null: true, foreign_key: { to_table: :users }
 
         end 
     end
