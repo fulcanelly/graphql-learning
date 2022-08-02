@@ -37,6 +37,10 @@ class Post < ActiveRecord::Base
 end
 
 class Rate < ActiveRecord::Base
+
+    has_one :post
+    has_one :user
+
 end
 
 class Comment < ActiveRecord::Base
@@ -76,6 +80,15 @@ class CreateAll < ActiveRecord::Migration[7.0]
             t.references :user, null: true, foreign_key: { to_table: :users }
 
         end 
+
+        create_table :rates, if_not_exists: true do |t|
+            t.timestamps 
+
+            #    t.belongs_to :user
+            t.references :user, null: true, foreign_key: { to_table: :users }
+            t.references :post, null: true, foreign_key: { to_table: :posts }
+
+        end
     end
 end
 

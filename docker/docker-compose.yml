@@ -2,6 +2,25 @@ version: "3.3"
 
 services:
  
+  # ui:
+  #   stdin_open: true
+    
+  #   tty: true
+  #   depends_on: 
+  #     - api
+  #   build: ../ui/
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
+  #   volumes: 
+  #     - ../ui/src:/app/src
+
+  #   restart: always
+
+  #   networks: ['mynetwork']
+
+  #   ports:
+  #     - 3000:3000 
+
   app:
      networks: ['mynetwork']
      build: ../app
@@ -13,6 +32,7 @@ services:
      restart: always
      ports:
       - 6464:6464    
+      - 4567:4567
   postgres:
     image: "postgres"
     networks: ['mynetwork']

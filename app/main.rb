@@ -1,6 +1,6 @@
 
 
-require_relative './model/person'
+require_relative './model/tables'
 
 require 'faker'
 require 'agoo'
@@ -21,6 +21,18 @@ module Types
     field :title, String 
     field :body, String 
 
+  end
+
+  class SummaryType < GraphQL::Schema::Object
+    field :id, ID
+    field :bio, String
+  end
+
+  class UserType < GraphQL::Schema::Object
+    field :id, ID
+    field :name, String
+    field :summary, SummaryType
+    field :posts, [PostType]
   end
 
   
@@ -56,6 +68,16 @@ module Types
       return Post.find_by(id: id[:id])
     end
 
+
+    
+    field :user, UserType, "Find a user by ID" do 
+      argument :id, ID
+    end
+
+    def user(id)
+      return User.find_by(id: id[:id])
+    end
+
   end
 
   class Schema < GraphQL::Schema
@@ -70,10 +92,20 @@ end
   Post.new(title: Faker::Lorem.words(number: rand(2..10)).join(" ")).save
 end
 
+
+sleep 0.1
+
 result_hash = Types::Schema.execute <<-GRAPHQL
 {
-  post(id: 2) {
-    title
+  user(id: 533) {
+    name
+    summary {
+      bio
+    }
+    posts {
+      title
+      body
+    }
   }
 }
 GRAPHQL
@@ -92,6 +124,12 @@ result = Types::Schema.execute(mut, variables: {id: 22})
 pp result.to_h
 pp result_hash.to_h
 
+sleep 1
+
+def rand_sentence(size)
+  Faker::Lorem.words(number: rand(2..10)).join(" ")
+end
+
 
 User.new(name: Faker::Name.name).tap do |user|
 
@@ -99,7 +137,14 @@ User.new(name: Faker::Name.name).tap do |user|
     bio: Faker::Lorem.words(number: rand(2..10)).join(" ")
   )
 
+  5.times do  
+    user.posts << Post.new(title: rand_sentence(10), body: rand_sentence(200))
+  end
+
+
   user.save  
+  pp user
+  
 end
 
-sleep 
+sleep
