@@ -9,16 +9,19 @@ ActiveRecord::Base.establish_connection(
   password: 'Pass2020!'
 )
 
-#ActiveRecord::Base.logger = Logger.new(STDOUT)
+ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 class User < ActiveRecord::Base
     self.table_name = 'users' 
     has_one :summary
     has_many :posts
-
+    has_many :rates
 end
 
 class Post < ActiveRecord::Base
+    self.table_name = 'posts' 
+
+    has_many :rates
 end
 
 
@@ -29,17 +32,11 @@ class Summary < ActiveRecord::Base
 
 end
 
-class Post < ActiveRecord::Base
-    self.table_name = 'posts' 
-
- #   belongs_to :users, foreign_key: { to_table: :user }
-
-end
 
 class Rate < ActiveRecord::Base
 
-    has_one :post
-    has_one :user
+    belongs_to :post
+    belongs_to :user
 
 end
 
@@ -84,6 +81,7 @@ class CreateAll < ActiveRecord::Migration[7.0]
         create_table :rates, if_not_exists: true do |t|
             t.timestamps 
 
+            t.integer :value
             #    t.belongs_to :user
             t.references :user, null: true, foreign_key: { to_table: :users }
             t.references :post, null: true, foreign_key: { to_table: :posts }

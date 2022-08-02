@@ -16,10 +16,25 @@ end
 module Types 
   PAGE_SIZE = 5
 
+  class UserType < GraphQL::Schema::Object
+  end
+
+  class RateType < GraphQL::Schema::Object
+    field :value, Integer
+    field :user, UserType
+    
+  end
+
   class PostType < GraphQL::Schema::Object
     field :id, ID
     field :title, String 
     field :body, String 
+    field :rates, [RateType]
+    # field :ok, String
+
+    # def ok()
+    #   object.id
+    # end
 
   end
 
@@ -28,7 +43,7 @@ module Types
     field :bio, String
   end
 
-  class UserType < GraphQL::Schema::Object
+  class UserType
     field :id, ID
     field :name, String
     field :summary, SummaryType
@@ -88,26 +103,41 @@ module Types
 end
 
 
-5.times do 
-  Post.new(title: Faker::Lorem.words(number: rand(2..10)).join(" ")).save
-end
-
-
-sleep 0.1
 
 result_hash = Types::Schema.execute <<-GRAPHQL
 {
-  user(id: 533) {
-    name
-    summary {
-      bio
-    }
+  user(id: 1394) {
+    ...UserInfo
+    
     posts {
-      title
-      body
+      ...PostInfo
+    }
+
+  }
+}
+
+fragment UserInfo on User {
+  name
+
+  summary {
+    bio
+  }
+
+}
+
+fragment PostInfo on Post {
+  title
+  body
+
+  rates { 
+    value
+    user {
+      ...UserInfo
+
     }
   }
 }
+
 GRAPHQL
 
 
@@ -126,25 +156,47 @@ pp result_hash.to_h
 
 sleep 1
 
-def rand_sentence(size)
-  Faker::Lorem.words(number: rand(2..10)).join(" ")
-end
+def build_sample 
 
-
-User.new(name: Faker::Name.name).tap do |user|
-
-  user.summary = Summary.new(
-    bio: Faker::Lorem.words(number: rand(2..10)).join(" ")
-  )
-
-  5.times do  
-    user.posts << Post.new(title: rand_sentence(10), body: rand_sentence(200))
+  def rand_sentence(size)
+    Faker::Lorem.words(number: rand(2..10)).join(" ")
   end
 
+  def get_rand_user() 
+    User.offset(rand User.count).first
+  end
 
-  user.save  
-  pp user
+  User.new(name: Faker::Name.name).tap do |user|
+
+    
+    user.summary = Summary.new(
+      bio: Faker::Lorem.words(number: rand(2..10)).join(" ")
+    )
+
+    5.times do  
+      user.posts << Post.new(title: rand_sentence(10), body: rand_sentence(200)).tap do |post|
+        if rand > 0.5 then
+          rand(10).times do 
+            post.rates << Rate.new(value: rand(10)).tap do |rate|
+              get_rand_user().rates << rate
+            end
+          end
+
+        end
+        
+      end
+
+    end
+
   
+
+
+    user.save  
+    pp user
+    
+  end
+
 end
 
+build_sample
 sleep
