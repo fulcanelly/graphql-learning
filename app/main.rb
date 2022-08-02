@@ -6,6 +6,7 @@ require 'faker'
 require 'agoo'
 require 'graphql'
 require 'ostruct'
+require 'colored'
 
 def show_bt()
   puts ">>"
@@ -166,34 +167,40 @@ def build_sample
     User.offset(rand User.count).first
   end
 
-  User.new(name: Faker::Name.name).tap do |user|
+  ActiveRecord::Base.transaction do
 
-    
-    user.summary = Summary.new(
-      bio: Faker::Lorem.words(number: rand(2..10)).join(" ")
-    )
+    User.new(name: Faker::Name.name).tap do |user|
 
-    5.times do  
-      user.posts << Post.new(title: rand_sentence(10), body: rand_sentence(200)).tap do |post|
-        if rand > 0.5 then
-          rand(10).times do 
-            post.rates << Rate.new(value: rand(10)).tap do |rate|
-              get_rand_user().rates << rate
+      
+      user.summary = Summary.new(
+        bio: Faker::Lorem.words(number: rand(2..10)).join(" ")
+      )
+
+      
+      5.times do  
+        user.posts << Post.new(title: rand_sentence(10), body: rand_sentence(200)).tap do |post|
+          if rand > 0.5 then
+            rand(10).times do 
+              post.rates << Rate.new(value: rand(10)).tap do |rate|
+                ru = get_rand_user()
+
+                ru.rates << rate
+              end
             end
-          end
 
+          end
+          
         end
-        
+
       end
 
+    
+
+
+      user.save  
+      pp user
     end
 
-  
-
-
-    user.save  
-    pp user
-    
   end
 
 end
