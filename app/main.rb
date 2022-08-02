@@ -105,11 +105,11 @@ end
 
 
 result_hash = Types::Schema.execute <<-GRAPHQL
-{
+query($ratePage: Int!, $postPage: Int!) {
   user(id: 1394) {
     ...UserInfo
     
-    posts {
+    posts(postPage: $postPage) {
       ...PostInfo
     }
 
@@ -129,7 +129,7 @@ fragment PostInfo on Post {
   title
   body
 
-  rates { 
+  rates(ratePage: $ratePage) { 
     value
     user {
       ...UserInfo
